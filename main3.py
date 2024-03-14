@@ -1,9 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
 
-URL = "https://timetable.waikato.ac.nz/perl-bin/timetable.pl?term=COMPX102-23B+%28TGA%29+COMPX310-23B+%28TGA%29+MATHS135-23B+%28TGA%29+ENGEN180-23B+%28TGA%29&submit=Create&action=Create&year=2023"
-start_dt = datetime.datetime(2023, 8, 28, tzinfo=pytz.timezone("Pacific/Auckland"))
-weeks = 6
+from icalendar import Calendar, Event
+import datetime
+import pytz
+import uuid
+
+#URL = "https://timetable.waikato.ac.nz/perl-bin/timetable.pl?term=COMPX102-23B+%28TGA%29+COMPX310-23B+%28TGA%29+MATHS135-23B+%28TGA%29+ENGEN180-23B+%28TGA%29&submit=Create&action=Create&year=2023"
+URL = "http://localhost/2024%20Online%20Timetable_%20University%20of%20Waikato.html"
+
+start_dt = datetime.datetime(2024, 2, 19, tzinfo=pytz.timezone("Pacific/Auckland"))
+weeks = 1
 
 page = requests.get(URL)
 
@@ -32,10 +39,7 @@ for table in job_elements:
         rowTrack += 1
         dayTrack = 0
 
-from icalendar import Calendar, Event
-import datetime
-import pytz
-import uuid
+
 
 c = Calendar()
 c.creator = "ics"
