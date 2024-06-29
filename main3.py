@@ -44,7 +44,6 @@ for table in job_elements:
 c = Calendar()
 c.creator = "ics"
 for week in range(0,weeks):
-    start_dt = start_dt + datetime.timedelta(weeks=1)
     print(start_dt)
     for data in dataTable:
         hour = data[2] + 7
@@ -66,6 +65,8 @@ for week in range(0,weeks):
         e.add('uid', uid)
 
         c.add_component(e)
+
+    start_dt = start_dt + datetime.timedelta(weeks=1)
 
 f = open('example.ics', 'wb')
 f.write(c.to_ical())
