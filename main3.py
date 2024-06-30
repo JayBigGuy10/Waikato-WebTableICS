@@ -7,10 +7,10 @@ import pytz
 import uuid
 
 #URL = "https://timetable.waikato.ac.nz/perl-bin/timetable.pl?term=COMPX102-23B+%28TGA%29+COMPX310-23B+%28TGA%29+MATHS135-23B+%28TGA%29+ENGEN180-23B+%28TGA%29&submit=Create&action=Create&year=2023"
-URL = "http://localhost/2024%20Online%20Timetable_%20University%20of%20Waikato.html"
+URL = "http://127.0.0.1:3000/pages/2024B Online Timetable_ University of Waikato.html"
 
-start_dt = datetime.datetime(2024, 2, 19, tzinfo=pytz.timezone("Pacific/Auckland"))
-weeks = 1
+start_dt = datetime.datetime(2024, 7, 8, tzinfo=pytz.timezone("Pacific/Auckland"))
+weeks = 14
 
 page = requests.get(URL)
 
@@ -39,17 +39,17 @@ for table in job_elements:
         rowTrack += 1
         dayTrack = 0
 
-
+current_dt = start_dt
 
 c = Calendar()
 c.creator = "ics"
 for week in range(0,weeks):
-    print(start_dt)
+    print(current_dt)
     for data in dataTable:
         hour = data[2] + 7
         day_of_week = data[1]
 
-        event_dt = start_dt + datetime.timedelta(days=day_of_week,hours=hour)
+        event_dt = current_dt + datetime.timedelta(days=day_of_week,hours=hour)
 
         e = Event()
         e.add('dtstart', event_dt)
@@ -66,9 +66,9 @@ for week in range(0,weeks):
 
         c.add_component(e)
 
-    start_dt = start_dt + datetime.timedelta(weeks=1)
+    current_dt = current_dt + datetime.timedelta(weeks=1)
 
-f = open('example.ics', 'wb')
+f = open(start_dt.strftime('%m-%d-%Y')+'.ics', 'wb')
 f.write(c.to_ical())
 f.close()
 
