@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule to ICS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.4.0/ical.min.js"></script>
+</head>
+<body>
+    <h2>Paste Your Table Below</h2>
+    <textarea id="htmlInput" rows="10" cols="80"></textarea>
+    <br>
+    <button onclick="convertToICS()">Generate ICS</button>
+    <a id="downloadLink" style="display:none">Download ICS</a>
+
+    <script>
+        function convertToICS() {
+            let parser = new DOMParser();
+            let inputHtml = document.getElementById("htmlInput").value;
+            let doc = parser.parseFromString(inputHtml, "text/html");
+            let tables = doc.querySelectorAll("table");
+            
+            let cal = new ICAL.Component(['vcalendar', [], []]);
+            cal.addPropertyWithValue('prodid', '-//My Schedule//EN');
+            cal.addPropertyWithValue('version', '2.0');
+            
+            tables.forEach(table => {
+                let rows = table.querySelectorAll("tr");
+                rows.forEach(row => {
+                    let tds = row.querySelectorAll("td");
+                    if (tds.length > 0) {
+                        let eventTitle = tds[0].textContent.trim();
+                        let details = tds[1].textContent.trim().split('|');
+                        if (details.length >= 5) {
+                            let weekday = details[2].split(' ')[1];
+                            let startTime = details[2].split(' ')[2];
+                            let endTime = details[2].split(' ')[4];
+                            let weeks = details[3].replace("Weeks: ", "").split(", ");
+                            
+                            let referenceDate = new Date(new Date().getFullYear(), 0, 1);
+                            while (referenceDate.getDay() !== 1) {
+                                referenceDate.setDate(referenceDate.getDate() + 1);
+                            }
+                            
+                            let weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                            let weekdayIndex = weekdays.indexOf(weekday);
+                            
+                            weeks.forEach(week => {
+                                let weekStart = new Date(referenceDate);
+                                weekStart.setDate(referenceDate.getDate() + (week - 1) * 7);
+                                
+                                let targetDate = new Date(weekStart);
+                                targetDate.setDate(weekStart.getDate() + (weekdayIndex - weekStart.getDay() + 7) % 7);
+                                
+                                let startDateTime = new Date(targetDate.toDateString() + ' ' + startTime);
+                                let endDateTime = new Date(targetDate.toDateString() + ' ' + endTime);
+                                
+                                let event = new ICAL.Component('vevent');
+                                event.addPropertyWithValue('summary', eventTitle);
+                                event.addPropertyWithValue('dtstart', ICAL.Time.fromJSDate(startDateTime));
+                                event.addPropertyWithValue('dtend', ICAL.Time.fromJSDate(endDateTime));
+                                event.addPropertyWithValue('uid', Math.random().toString(36).substring(2));
+                                cal.addSubcomponent(event);
+                            });
+                        }
+                    }
+                });
+            });
+            
+            let blob = new Blob([cal.toString()], { type: 'text/calendar' });
+            let url = URL.createObjectURL(blob);
+            let downloadLink = document.getElementById("downloadLink");
+            downloadLink.href = url;
+            downloadLink.download = "schedule.ics";
+            downloadLink.style.display = "block";
+            downloadLink.innerText = "Download ICS File";
+        }
+    </script>
+</body>
+</html>
